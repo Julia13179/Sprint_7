@@ -1,15 +1,10 @@
 import requests
-from data import CREATE_COURIER_URL, LOGIN_COURIER_URL, STATUS_CODE_201, STATUS_CODE_200
-import random
-import string
+import allure
+from data import CREATE_COURIER_URL, LOGIN_COURIER_URL, DELETE_COURIER_URL, STATUS_CODE_201, STATUS_CODE_200
+from helpers.helpers_utils import generate_random_string
 
 
-def generate_random_string(length):
-    letters = string.ascii_lowercase
-    random_string = ''.join(random.choice(letters) for i in range(length))
-    return random_string
-
-
+@allure.step("Создание курьера")
 def create_courier(login, password, first_name):
     payload = {
         "login": login,
@@ -20,6 +15,7 @@ def create_courier(login, password, first_name):
     return response
 
 
+@allure.step("Авторизация курьера")
 def login_courier(login, password):
     payload = {
         "login": login,
@@ -29,6 +25,13 @@ def login_courier(login, password):
     return response
 
 
+@allure.step("Удаление курьера")
+def delete_courier(courier_id):
+    response = requests.delete(f"{DELETE_COURIER_URL}/{courier_id}")
+    return response
+
+
+@allure.step("Регистрация нового курьера")
 def register_new_courier_and_return_login_password():
     login_pass = []
     
@@ -44,3 +47,14 @@ def register_new_courier_and_return_login_password():
         login_pass.append(first_name)
     
     return login_pass
+
+
+@allure.step("Удаление курьера по логину и паролю")
+def delete_courier_by_credentials(login, password):
+    login_response = login_courier(login, password)
+    
+    if login_response.status_code == STATUS_CODE_200:
+        courier_id = login_response.json()["id"]
+        return delete_courier(courier_id)
+    else:
+        return login_response
