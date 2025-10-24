@@ -1,4 +1,5 @@
 import pytest
+import time
 from data import ORDER_DATA
 from api.courier_api import register_new_courier_and_return_login_password, login_courier, delete_courier
 
@@ -17,4 +18,45 @@ def courier_data():
 @pytest.fixture
 def order_data():
     return ORDER_DATA.copy()
+
+
+@pytest.fixture
+def wrong_password():
+    return "wrong_password"
+
+
+@pytest.fixture
+def nonexistent_user_data():
+    timestamp = str(int(time.time()))
+    return {
+        "login": f"nonexistent_user_{timestamp}",
+        "password": "password123"
+    }
+
+
+@pytest.fixture
+def unique_login():
+    timestamp = str(int(time.time()))
+    return f"test_login_{timestamp}"
+
+
+@pytest.fixture
+def unique_password():
+    timestamp = str(int(time.time()))
+    return f"password_{timestamp}"
+
+
+@pytest.fixture
+def unique_courier_data():
+    timestamp = str(int(time.time()))
+    return {
+        "login": f"test_courier_{timestamp}",
+        "password": f"password_{timestamp}",
+        "first_name": "Test"
+    }
+
+
+@pytest.fixture
+def test_first_name():
+    return "Test"
 

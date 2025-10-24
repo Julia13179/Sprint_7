@@ -10,30 +10,19 @@ class TestLoginCourier:
 
     @allure.title("Успешная авторизация курьера")
     def test_login_courier_success(self, courier_data):
-        login = f"login_test_{courier_data[0]}"
-        password = "password123"
-        first_name = "Test"
-        
-        create_response = create_courier(login, password, first_name)
-        assert create_response.status_code == 201, "Курьер должен быть создан"
-        
         payload = {
-            "login": login,
-            "password": password
+            "login": courier_data[0],
+            "password": courier_data[1]
         }
         
         response = requests.post(LOGIN_COURIER_URL, data=payload)
         
         check_response_status_code(response, STATUS_CODE_200)
         check_response_has_id(response)
-        
-        delete_courier_by_credentials(login, password)
 
     @allure.title("Авторизация без логина")
-    def test_login_courier_missing_login_fails(self):
-        import time
-        timestamp = str(int(time.time()))
-        password = f"password_{timestamp}"
+    def test_login_courier_missing_login_fails(self, unique_password):
+        password = unique_password
         
         payload = {
             "password": password
@@ -47,10 +36,8 @@ class TestLoginCourier:
             check_response_has_error_message(response, ERROR_MESSAGES["MISSING_LOGIN_PASSWORD"])
 
     @allure.title("Авторизация без пароля")
-    def test_login_courier_missing_password_fails(self):
-        import time
-        timestamp = str(int(time.time()))
-        login = f"test_login_{timestamp}"
+    def test_login_courier_missing_password_fails(self, unique_login):
+        login = unique_login
         
         payload = {
             "login": login
@@ -75,11 +62,9 @@ class TestLoginCourier:
             check_response_has_error_message(response, ERROR_MESSAGES["MISSING_LOGIN_PASSWORD"])
 
     @allure.title("Авторизация с неправильным логином")
-    def test_login_courier_wrong_login_fails(self):
-        import time
-        timestamp = str(int(time.time()))
-        login = f"nonexistent_user_{timestamp}"
-        password = "password123"
+    def test_login_courier_wrong_login_fails(self, nonexistent_user_data):
+        login = nonexistent_user_data["login"]
+        password = nonexistent_user_data["password"]
         
         payload = {
             "login": login,
@@ -92,19 +77,9 @@ class TestLoginCourier:
         check_response_has_error_message(response, ERROR_MESSAGES["INVALID_LOGIN_PASSWORD"])
 
     @allure.title("Авторизация с неправильным паролем")
-    def test_login_courier_wrong_password_fails(self):
-        import time
-        timestamp = str(int(time.time()))
-        login = f"wrong_password_test_{timestamp}"
-        password = "correct_password"
-        first_name = "Test"
-        
-        create_response = create_courier(login, password, first_name)
-        assert create_response.status_code == 201, "Курьер должен быть создан"
-        
-        wrong_password = "wrong_password"
+    def test_login_courier_wrong_password_fails(self, courier_data, wrong_password):
         payload = {
-            "login": login,
+            "login": courier_data[0],
             "password": wrong_password
         }
         
@@ -112,19 +87,12 @@ class TestLoginCourier:
         
         check_response_status_code(response, STATUS_CODE_404)
         check_response_has_error_message(response, ERROR_MESSAGES["INVALID_LOGIN_PASSWORD"])
-        
-        delete_courier_by_credentials(login, password)
 
     @allure.title("Авторизация несуществующего пользователя")
-    def test_login_courier_nonexistent_user_fails(self):
-        import time
-        timestamp = str(int(time.time()))
-        login = f"nonexistent_user_{timestamp}"
-        password = "password123"
-        
+    def test_login_courier_nonexistent_user_fails(self, nonexistent_user_data):
         payload = {
-            "login": login,
-            "password": password
+            "login": nonexistent_user_data["login"],
+            "password": nonexistent_user_data["password"]
         }
         
         response = requests.post(LOGIN_COURIER_URL, data=payload)
